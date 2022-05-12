@@ -18,22 +18,22 @@ const data: Array<[number, number]> = x.map(i => [i, Math.sin(i)])
 
 const fx = d3.scaleLinear()
   .domain(<[number, number]>d3.extent(x))
-  .range([20, 780])
+  .range([30, 770])
 
 const fy = d3.scaleLinear()
   .domain([-1, 1])
-  .range([20, 580])
+  .range([570, 30])
 
 const line = d3.line()
   .x((d: [number, number]) => fx(d[0]))
   .y((d: [number, number]) => fy(d[1]))
 
 const xAxis = (g: d3.Selection<any, any, any, any>) => g
-  .attr("transform", "translate(0,580)")
+  .attr("transform", "translate(0,570)")
   .call(d3.axisBottom(fx).ticks(20).tickSizeOuter(0))
 
 const yAxis = (g: d3.Selection<any, any, any, any>) => g
-  .attr("transform", "translate(20,0)")
+  .attr("transform", "translate(30,0)")
   .call(d3.axisLeft(fy).ticks(20))
   .call(g => g.select(".domain").remove())
 
