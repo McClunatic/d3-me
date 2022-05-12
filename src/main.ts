@@ -24,24 +24,24 @@ const fy = d3.scaleLinear()
   .domain([-1, 1])
   .range([570, 30])
 
-const line = d3.line()
-  .x((d: [number, number]) => fx(d[0]))
-  .y((d: [number, number]) => fy(d[1]))
+let svg = d3.select("#app").append("svg")
+  .attr("width", 800)
+  .attr("height", 600)
 
-const xAxis = (g: d3.Selection<any, any, any, any>) => g
-  .attr("transform", "translate(0,570)")
-  .call(d3.axisBottom(fx).ticks(20).tickSizeOuter(0))
+svg.append("g")
+    .attr("transform", "translate(0,570)")
+    .call(d3.axisBottom(fx))
 
-const yAxis = (g: d3.Selection<any, any, any, any>) => g
-  .attr("transform", "translate(30,0)")
-  .call(d3.axisLeft(fy).ticks(20))
-  .call(g => g.select(".domain").remove())
+svg.append("g")
+    .attr("transform", "translate(30,0)")
+    .call(d3.axisLeft(fy))
 
-app.innerHTML += `<svg viewBox="0 0 800 600">
-  <path d="${line(data)}" fill="none" stroke="steelblue" stroke-width="1.5" stroke-miterlimit="1"></path>
-  <g id="x-axis"></g>
-  <g id="y-axis"></g>
-</svg>`
-
-d3.select("g#x-axis").call(xAxis)
-d3.select("g#y-axis").call(yAxis)
+svg.append("g")
+    .attr("fill", "none")
+    .attr("stroke-linecap", "round")
+    .selectAll("path")
+      .data(data)
+      .join("path")
+        .attr("d", d => `M${fx(d[0])},${fy(d[1])}h0`)
+        .attr("stroke", "#1F77B4")
+        .attr("stroke-width", 5)
