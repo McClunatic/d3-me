@@ -47,28 +47,41 @@ g.selectAll("path")
     .attr("stroke-width", 5)
 
 function update() {
-  let ix = data.length
-  data.push([ix / 4, Math.sin(ix / 4)])
+  let extent = <[number, number]>d3.extent(data.map(d => d[0]))
+  extent[1] += 0.25
+  data.push([extent[1], Math.sin(extent[1])])
 
-  if (ix >= 40) {
-    fx.domain([data[ix - 40][0], data[ix][0]])
-  } else {
-    fx.domain([data[0][0], data[data.length - 1][0]])
-  }
+  fx.domain(extent)
   gx.transition()
-    // .duration(1000)
+    .duration(900)
     .call(d3.axisBottom(fx))
 
   g.selectAll("path")
-    .data(data)
+    .data(data, ((d: [number, number]) => d[0]) as d3.ValueFn<d3.BaseType, unknown, d3.KeyType>)
+    .join(
+      enter => enter.append("path")
+          .attr("d", d => `M${fx(d[0] + 0.25)},${fy(d[1])}h0`)
+          .attr("stroke-width", 5)
+        .call(enter => enter.transition()
+          .duration(900)
+          .attr("d", d => `M${fx(d[0])},${fy(d[1])}h0`)
+          .attr("stroke", "#1F77B4")
+        ),
+      update => update
+        .call(enter => enter.transition()
+          .duration(900)
+          .attr("d", d => `M${fx(d[0])},${fy(d[1])}h0`)
+        ),
+    )
+
     .join("path")
-      .attr("d", d => `M${fx(d[0])},${fy(d[1])}h0`)
       .attr("stroke", "#1F77B4")
       .attr("stroke-width", 5)
+
+  data.shift()
 }
 
 while (true) {
   update()
   await new Promise(r => setTimeout(r, 2000));
-  break;
 }
