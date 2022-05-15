@@ -1,6 +1,6 @@
 import * as d3 from 'd3'
 
-type Datum = [number, number]
+type Datum = [Date, number]
 type Selection = d3.Selection<Element, Datum[], Element, any>
 type GSelection = d3.Selection<SVGGElement, Datum[], Element, any>
 
@@ -17,7 +17,7 @@ export default function chart() {
           .attr("transform", `translate(0,${height - margin.bottom})`)
           .call(d3.axisBottom(xScale).ticks(width / 80).tickSizeOuter(0))
       },
-      line = d3.line().x(X).y(Y)
+      line = d3.line<Datum>().x(X).y(Y)
 
   function my(selection: Selection) {
     selection.each(function(data: Datum[]) {
