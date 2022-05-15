@@ -10,6 +10,37 @@ app.innerHTML = `
   <a href="https://vitejs.dev/guide/features.html" target="_blank">Documentation</a>
 `
 
+function chart(config: Object) {
+  let width = 800
+  let height = 600
+  let margin = 30
+
+  function my() {
+
+  }
+
+  my.width = function(value: number) {
+    if (!arguments.length)
+      return width
+    width = value
+    return my
+  }
+
+  my.height = function(value: number) {
+    if (!arguments.length)
+      return height
+    height = value
+    return my
+  }
+
+  my.margin = function(value: number) {
+    if (!arguments.length)
+      return margin
+    margin = value
+    return my
+  }
+}
+
 const x: Array<number> = []
 for (let i = 0; i < 41; i++) {
   x.push(i * 0.25)
