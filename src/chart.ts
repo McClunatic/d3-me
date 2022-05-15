@@ -1,15 +1,24 @@
 import * as d3 from 'd3'
 
+interface Margin {
+  top: number
+  right: number
+  bottom: number
+  left: number
+}
 type Datum = [Date, number]
+type XAccessor = (d: Datum) => Date
+type YAccessor = (d: Datum) => number
+
 type Selection = d3.Selection<Element, Datum[], Element, any>
 type GSelection = d3.Selection<SVGGElement, Datum[], Element, any>
 
 export default function chart() {
-  let margin = {top: 30, right: 30, bottom: 30, left: 30},
+  let margin: Margin = {top: 30, right: 30, bottom: 30, left: 30},
       width = 800,
       height = 600,
-      xValue = function(d: Datum) { return d[0]; },
-      yValue = function(d: Datum) { return d[1]; },
+      xValue: XAccessor = function(d: Datum) { return d[0]; },
+      yValue: YAccessor = function(d: Datum) { return d[1]; },
       xScale = d3.scaleUtc(),
       yScale = d3.scaleLinear(),
       xAxis = function(g: GSelection) {
@@ -22,20 +31,16 @@ export default function chart() {
   function my(selection: Selection) {
     selection.each(function(data: Datum[]) {
 
-      // Convert data to standard representation greedily;
-      // this is needed for nondeterministic accessors.
-      data = data.map(function(d, i) {
-        return [xValue.call(data, d, i), yValue.call(data, d, i)];
-      });
-
       // Update the x-scale.
+      let xDomain = d3.extent(data, (d: Datum) => d[0])
       xScale
-          .domain(d3.extent(data, function(d) { return d[0]; }))
+          .domain(xDomain.map(v => v!))
           .range([0, width - margin.left - margin.right]);
 
       // Update the y-scale.
+      let yDomain = d3.extent(data, (d: Datum) => d[1])
       yScale
-          .domain([0, d3.max(data, function(d) { return d[1]; })])
+          .domain(yDomain.map(v => v!))
           .range([height - margin.top - margin.bottom, 0]);
 
       // Select the svg element, if it exists.
@@ -76,33 +81,33 @@ export default function chart() {
     return yScale(d[1]);
   }
 
-  my.margin = function(_) {
+  my.margin = function(value: Margin | undefined) {
     if (!arguments.length) return margin;
-    margin = _;
+    margin = value!;
     return my;
   };
 
-  my.width = function(_) {
+  my.width = function(value: number | undefined) {
     if (!arguments.length) return width;
-    width = _;
+    width = value!;
     return my;
   };
 
-  my.height = function(_) {
+  my.height = function(value: number | undefined) {
     if (!arguments.length) return height;
-    height = _;
+    height = value!;
     return my;
   };
 
-  my.x = function(_) {
+  my.x = function(value: XAccessor | undefined) {
     if (!arguments.length) return xValue;
-    xValue = _;
+    xValue = value!;
     return my;
   };
 
-  my.y = function(_) {
+  my.y = function(value: YAccessor | undefined) {
     if (!arguments.length) return yValue;
-    yValue = _;
+    yValue = value!;
     return my;
   };
 
