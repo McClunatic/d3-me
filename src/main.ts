@@ -16,7 +16,12 @@ app.innerHTML = `
 `
 
 let plot_data: Array<[Date, number]> = []
-let chart = streamingChart(({xlabel: "t", ylabel: "sin(t)"} as Config))
+let duration = 200
+let chart = streamingChart(({
+  duration,
+  xlabel: "t",
+  ylabel: "sin(t)",
+} as Config))
 
 while (true) {
   let response = await fetch('http://localhost:8000/')
@@ -27,5 +32,5 @@ while (true) {
   d3.select("#app")
     .data([plot_data])
     .call(chart)
-  await new Promise(r => setTimeout(r, 200))
+  await new Promise(r => setTimeout(r, duration))
 }
