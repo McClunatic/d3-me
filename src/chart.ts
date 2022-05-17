@@ -7,12 +7,14 @@ interface Margin {
   left: number
 }
 
-interface Config {
+export interface Config {
   margin: Margin
   width: number
   height: number
   duration: number
   domain: [number, number]
+  xlabel: string
+  ylabel: string
 }
 
 type Datum = [Date, number]
@@ -21,11 +23,13 @@ type Selection = d3.Selection<d3.BaseType, Datum[], HTMLElement, any>
 type ValueFn = d3.ValueFn<d3.BaseType, unknown, d3.KeyType>
 
 export function streamingChart(config?: Config) {
-  let margin = config?.margin || {top: 20, right: 20, bottom: 40, left: 40}
+  let margin = config?.margin || {top: 20, right: 20, bottom: 60, left: 60}
   let width = config?.width || 800
   let height = config?.height || 600
   let duration = config?.duration || 200
   let yDomain = config?.domain || [-1, 1]
+  let xlabel = config?.xlabel || "x"
+  let ylabel = config?.ylabel || "y"
 
   let x = d3.scaleUtc()
   let y = d3.scaleLinear()
@@ -56,7 +60,24 @@ export function streamingChart(config?: Config) {
           .attr("class", "x axis")
       gEnter
         .append("g")
+        .append("text")
+          .attr("x", (width - margin.left - margin.right) / 2)
+          .attr("y", height - margin.bottom / 2)
+          .attr("text-anchor", "start")
+          .attr("fill", "black")
+          .text(xlabel)
+      gEnter
+        .append("g")
           .attr("class", "y axis")
+      gEnter
+        .append("g")
+        .append("text")
+          .attr("x", -(height - margin.top - margin.bottom) / 2)
+          .attr("y", -margin.left / 2)
+          .attr("text-anchor", "start")
+          .attr("fill", "black")
+          .attr("transform", "rotate(-90)")
+          .text(ylabel)
       gEnter
         .append("defs").append("clipPath")
           .attr("id", "clip")

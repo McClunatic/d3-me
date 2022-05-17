@@ -1,7 +1,7 @@
 import './style.css'
 
 import * as d3 from 'd3'
-import { streamingChart } from './chart'
+import { Config, streamingChart } from './chart'
 
 interface Response {
   x: number
@@ -16,7 +16,7 @@ app.innerHTML = `
 `
 
 let plot_data: Array<[Date, number]> = []
-let chart = streamingChart()
+let chart = streamingChart(({xlabel: "t", ylabel: "sin(t)"} as Config))
 
 while (true) {
   let response = await fetch('http://localhost:8000/')
