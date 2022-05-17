@@ -12,22 +12,24 @@ interface Config {
   width: number
   height: number
   duration: number
+  domain: [number, number]
 }
 
 type Datum = [Date, number]
 
 type Selection = d3.Selection<d3.BaseType, Datum[], HTMLElement, any>
 
-export function chart(config?: Config) {
+export function streamingChart(config?: Config) {
   let margin = config?.margin || {top: 20, right: 20, bottom: 40, left: 40}
   let width = config?.width || 800
   let height = config?.height || 600
   let duration = config?.duration || 500
+  let yDomain = config?.domain || [700, 1600]
 
   let x = d3.scaleUtc()
   let y = d3.scaleLinear()
 
-  function my(selection: Selection) {
+  function chart(selection: Selection) {
     selection.each(function(data: Datum[]) {
 
       // Update the scales.
@@ -41,7 +43,7 @@ export function chart(config?: Config) {
         .range([0, width - margin.left - margin.right])
       y
         // .domain(d3.extent(data, (d: Datum) => d[1]).map(v => v!))
-        .domain([700, 1600])
+        .domain(yDomain)
         .range([height - margin.top - margin.bottom, 0])
 
       // Create the line.
@@ -111,5 +113,5 @@ export function chart(config?: Config) {
     })
   }
 
-  return my
+  return chart
 }

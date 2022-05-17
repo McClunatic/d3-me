@@ -1,7 +1,7 @@
 import './style.css'
 
 import * as d3 from 'd3'
-import { chart } from './chart'
+import { streamingChart } from './chart'
 
 
 const app = document.querySelector<HTMLDivElement>('#app')!
@@ -20,11 +20,11 @@ function formatData(data: d3.DSVRowArray<string>) {
 }
 
 d3.csv("sp500.csv", ).then(formatData).then(async (data) => {
-  let myChart = chart()
+  let chart = streamingChart()
   for(let i = 0; i < data.length - 20; i++) {
     d3.select("#app")
         .data([data.slice(i, i + 20)])
-        .call(myChart)
+        .call(chart)
     await new Promise(r => setTimeout(r, 500))
   }
 });
