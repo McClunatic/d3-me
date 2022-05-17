@@ -37,7 +37,6 @@ export function streamingChart(config?: Config) {
         data.slice(0, data.length - 1),
         (d: Datum) => d[0],
       ).map(v => v!)
-      let minDate = new Date(xDomain[0].getTime())
       x
         .domain(xDomain)
         .range([0, width - margin.left - margin.right])
@@ -45,11 +44,6 @@ export function streamingChart(config?: Config) {
         // .domain(d3.extent(data, (d: Datum) => d[1]).map(v => v!))
         .domain(yDomain)
         .range([height - margin.top - margin.bottom, 0])
-
-      // Create the line.
-      let line = d3.line<Datum>()
-        .x(d => x(d[0]))
-        .y(d => y(d[1]))
 
       // Create the skeletal chart if necessary.
       let gEnter = d3.select(this).selectAll("svg")
@@ -73,10 +67,8 @@ export function streamingChart(config?: Config) {
         .append("g")
           .attr("clip-path", "url(#clip)")
           .attr("class", "data")
-        .append("path")
-          .attr("class", "line")
           .attr("fill", "none")
-          .attr("stroke", "black")
+          .attr("stroke-linecap", "round")
 
       // Update the out dimensions.
       let svg = d3.select(this).select("svg")
@@ -89,19 +81,26 @@ export function streamingChart(config?: Config) {
 
       // Update the line path.
       svg.select("g.data").selectAll("path")
-          .transition()
-            .duration(duration)
-            .ease(d3.easeLinear)
-            .on("start", function() {
-              d3.select(this)
-                .attr("d", line(data))
-                .attr("transform", null)
-              d3.active(this)!
-                .attr(
-                  "transform",
-                  `translate(${x(minDate.setMonth(minDate.getMonth() - 1))},0)`,
-                )
-            })
+          .data(data, ((d: [number, number]) => d[0]) as d3.ValueFn<d3.BaseType, unknown, d3.KeyType>)
+          .join(
+            enter => enter.append("path")
+              // Artificially account for axis transition by undoing it on enter
+              // (right shift data by 1 month here for monthly data)
+              .attr("d", d => `M${x(d[0].setMonth(d[0].getMonth() + 1))},${y(d[1])}h0`)
+              .attr("stroke", "blue")
+              .attr("stroke-width", 5)
+              .call(enter => enter.transition()
+                .duration(duration)
+                .ease(d3.easeLinear)
+                .attr("d", d => `M${x(d[0])},${y(d[1])}h0`)
+              ),
+            update => update
+              .call(update => update.transition()
+                .duration(duration)
+                .ease(d3.easeLinear)
+                .attr("d", d => `M${x(d[0])},${y(d[1])}h0`)
+              ),
+          )
 
       // Update the axes.
       g.select<SVGGElement>(".x.axis")
