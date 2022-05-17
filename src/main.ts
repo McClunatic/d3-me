@@ -3,6 +3,10 @@ import './style.css'
 import * as d3 from 'd3'
 import { streamingChart } from './chart'
 
+interface Response {
+  x: number
+  y: number
+}
 
 const app = document.querySelector<HTMLDivElement>('#app')!
 
@@ -11,20 +15,17 @@ app.innerHTML = `
   <a href="https://vitejs.dev/guide/features.html" target="_blank">Documentation</a>
 `
 
-function formatData(data: d3.DSVRowArray<string>) {
-  let formatted: Array<[Date, number]> = data.map(
-    d => [d3.timeParse("%b %Y")(d.date!)!, parseFloat(d.price!)]
-  )
-  // formatted.forEach(val => console.log(val))
-  return formatted
-}
+let plot_data: Array<[Date, number]> = []
+let chart = streamingChart()
 
-d3.csv("sp500.csv", ).then(formatData).then(async (data) => {
-  let chart = streamingChart()
-  for(let i = 0; i < data.length - 20; i++) {
-    d3.select("#app")
-        .data([data.slice(i, i + 20)])
-        .call(chart)
-    await new Promise(r => setTimeout(r, 500))
-  }
-});
+while (true) {
+  let response = await fetch('http://localhost:8000/')
+  let data: Response = await response.json()
+  let data_point: [Date, number] = [new Date(data.x * 1000), data.y]
+  plot_data.push(data_point)
+  if (plot_data.length > 50) plot_data.shift()
+  d3.select("#app")
+    .data([plot_data])
+    .call(chart)
+  await new Promise(r => setTimeout(r, 200))
+}

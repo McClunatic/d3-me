@@ -23,8 +23,8 @@ export function streamingChart(config?: Config) {
   let margin = config?.margin || {top: 20, right: 20, bottom: 40, left: 40}
   let width = config?.width || 800
   let height = config?.height || 600
-  let duration = config?.duration || 500
-  let yDomain = config?.domain || [700, 1600]
+  let duration = config?.duration || 200
+  let yDomain = config?.domain || [-1, 1]
 
   let x = d3.scaleUtc()
   let y = d3.scaleLinear()
@@ -34,14 +34,13 @@ export function streamingChart(config?: Config) {
 
       // Update the scales.
       let xDomain = d3.extent(
-        data.slice(0, data.length - 1),
+        data,
         (d: Datum) => d[0],
       ).map(v => v!)
       x
         .domain(xDomain)
         .range([0, width - margin.left - margin.right])
       y
-        // .domain(d3.extent(data, (d: Datum) => d[1]).map(v => v!))
         .domain(yDomain)
         .range([height - margin.top - margin.bottom, 0])
 
@@ -84,9 +83,7 @@ export function streamingChart(config?: Config) {
           .data(data, ((d: [number, number]) => d[0]) as d3.ValueFn<d3.BaseType, unknown, d3.KeyType>)
           .join(
             enter => enter.append("path")
-              // Artificially account for axis transition by undoing it on enter
-              // (right shift data by 1 month here for monthly data)
-              .attr("d", d => `M${x(d[0].setMonth(d[0].getMonth() + 1))},${y(d[1])}h0`)
+              .attr("d", d => `M${x(new Date(d[0].getTime() + duration))},${y(d[1])}h0`)
               .attr("stroke", "blue")
               .attr("stroke-width", 5)
               .call(enter => enter.transition()
