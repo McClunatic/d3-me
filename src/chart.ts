@@ -18,6 +18,7 @@ interface Config {
 type Datum = [Date, number]
 
 type Selection = d3.Selection<d3.BaseType, Datum[], HTMLElement, any>
+type ValueFn = d3.ValueFn<d3.BaseType, unknown, d3.KeyType>
 
 export function streamingChart(config?: Config) {
   let margin = config?.margin || {top: 20, right: 20, bottom: 40, left: 40}
@@ -80,10 +81,12 @@ export function streamingChart(config?: Config) {
 
       // Update the line path.
       svg.select("g.data").selectAll("path")
-          .data(data, ((d: [number, number]) => d[0]) as d3.ValueFn<d3.BaseType, unknown, d3.KeyType>)
+          .data(data, ((d: [number, number]) => d[0]) as ValueFn)
           .join(
             enter => enter.append("path")
-              .attr("d", d => `M${x(new Date(d[0].getTime() + duration))},${y(d[1])}h0`)
+              .attr("d", d => (
+                `M${x(new Date(d[0].getTime() + duration))},${y(d[1])}h0`
+              ))
               .attr("stroke", "blue")
               .attr("stroke-width", 5)
               .call(enter => enter.transition()
