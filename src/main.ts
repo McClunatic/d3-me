@@ -19,9 +19,12 @@ function formatData(data: d3.DSVRowArray<string>) {
   return formatted
 }
 
-d3.csv("sp500.csv", ).then(formatData).then(data => {
+d3.csv("sp500.csv", ).then(formatData).then(async (data) => {
   let myChart = chart()
-  d3.select("#app")
-      .data([data])
-      .call(myChart)
+  for(let i = 0; i < data.length - 20; i++) {
+    d3.select("#app")
+        .data([data.slice(i, i + 20)])
+        .call(myChart)
+    await new Promise(r => setTimeout(r, 500))
+  }
 });

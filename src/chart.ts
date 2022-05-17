@@ -11,16 +11,18 @@ interface Config {
   margin: Margin
   width: number
   height: number
+  duration: number
 }
 
-export type Datum = [Date, number]
+type Datum = [Date, number]
 
-export type Selection = d3.Selection<d3.BaseType, Datum[], HTMLElement, any>
+type Selection = d3.Selection<d3.BaseType, Datum[], HTMLElement, any>
 
 export function chart(config?: Config) {
-  let margin = config?.margin || {top: 30, right: 30, bottom: 30, left: 30}
+  let margin = config?.margin || {top: 20, right: 20, bottom: 40, left: 40}
   let width = config?.width || 800
   let height = config?.height || 600
+  let duration = config?.duration || 500
 
   let x = d3.scaleUtc()
   let y = d3.scaleLinear()
@@ -29,11 +31,17 @@ export function chart(config?: Config) {
     selection.each(function(data: Datum[]) {
 
       // Update the scales.
+      let xDomain = d3.extent(
+        data.slice(0, data.length - 1),
+        (d: Datum) => d[0],
+      ).map(v => v!)
+      let minDate = new Date(xDomain[0].getTime())
       x
-        .domain(d3.extent(data, (d: Datum) => d[0]).map(v => v!))
+        .domain(xDomain)
         .range([0, width - margin.left - margin.right])
       y
-        .domain(d3.extent(data, (d: Datum) => d[1]).map(v => v!))
+        // .domain(d3.extent(data, (d: Datum) => d[1]).map(v => v!))
+        .domain([700, 1600])
         .range([height - margin.top - margin.bottom, 0])
 
       // Create the line.
@@ -48,16 +56,25 @@ export function chart(config?: Config) {
         .append("svg")
         .append("g")
       gEnter
-        .append("path")
-          .attr("class", "line")
-          .attr("fill", "none")
-          .attr("stroke", "black")
-      gEnter
         .append("g")
           .attr("class", "x axis")
       gEnter
         .append("g")
           .attr("class", "y axis")
+      gEnter
+        .append("defs").append("clipPath")
+          .attr("id", "clip")
+        .append("rect")
+          .attr("width", width - margin.left - margin.right)
+          .attr("height", height - margin.top - margin.bottom)
+      gEnter
+        .append("g")
+          .attr("clip-path", "url(#clip)")
+          .attr("class", "data")
+        .append("path")
+          .attr("class", "line")
+          .attr("fill", "none")
+          .attr("stroke", "black")
 
       // Update the out dimensions.
       let svg = d3.select(this).select("svg")
@@ -69,15 +86,27 @@ export function chart(config?: Config) {
           .attr("transform", `translate(${margin.left},${margin.top})`)
 
       // Update the line path.
-      g.select(".line")
-          .attr("d", line(data))
+      svg.select("g.data").selectAll("path")
+          .transition()
+            .duration(duration)
+            .ease(d3.easeLinear)
+            .on("start", function() {
+              d3.select(this)
+                .attr("d", line(data))
+                .attr("transform", null)
+              d3.active(this)!
+                .attr(
+                  "transform",
+                  `translate(${x(minDate.setMonth(minDate.getMonth() - 1))},0)`,
+                )
+            })
 
       // Update the axes.
       g.select<SVGGElement>(".x.axis")
           .attr("transform", `translate(0,${y.range()[0]})`)
+          .transition().duration(duration).ease(d3.easeLinear)
           .call(d3.axisBottom(x).ticks(5))
       g.select<SVGGElement>(".y.axis")
-          .attr("transform", `translate(${x.range()[0]},0)`)
           .call(d3.axisLeft(y).ticks(5))
     })
   }
