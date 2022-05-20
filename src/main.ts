@@ -17,6 +17,7 @@ app.innerHTML = `
     <button id="start">Start</button>
     <button id="stop">Stop</button>
     <button id="reset">Reset</button>
+    <span id="latest"></span>
   </div>
 `
 
@@ -48,6 +49,9 @@ while (true) {
     let data: Response = await response.json()
     let data_point: [Date, number] = [new Date(data.x * 1000), data.y]
     plot_data.push(data_point)
+    let s = data_point[1] < 0 ? '' : '+'
+    document.getElementById("latest")!.textContent =
+      `${data_point[0].toLocaleTimeString()}: ${s}${data_point[1].toFixed(2)}`
     if (plot_data.length > 50) plot_data.shift()
     d3.select("#app")
       .data([plot_data])
