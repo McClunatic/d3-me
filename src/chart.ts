@@ -24,8 +24,8 @@ type ValueFn = d3.ValueFn<d3.BaseType, unknown, d3.KeyType>
 
 export function streamingChart(config?: Config) {
   let margin = config?.margin || {top: 20, right: 20, bottom: 60, left: 60}
-  let width = config?.width || 800
-  let height = config?.height || 600
+  let width = config?.width || 600
+  let height = config?.height || 400
   let duration = config?.duration || 200
   let yDomain = config?.domain || [-1, 1]
   let xlabel = config?.xlabel || "x"
@@ -93,8 +93,7 @@ export function streamingChart(config?: Config) {
 
       // Update the out dimensions.
       let svg = d3.select(this).select("svg")
-          .attr("width", width)
-          .attr("height", height)
+          .attr("viewBox", `0 0 ${width} ${height}`)
 
       // Update the inner dimensions.
       let g = svg.select("g")

@@ -13,6 +13,11 @@ const app = document.querySelector<HTMLDivElement>('#app')!
 app.innerHTML = `
   <h1>Hello Vite!</h1>
   <a href="https://vitejs.dev/guide/features.html" target="_blank">Documentation</a>
+  <div class="buttons">
+    <button id="start">Start</button>
+    <button id="stop">Stop</button>
+    <button id="reset">Reset</button>
+  </div>
 `
 
 let plot_data: Array<[Date, number]> = []
